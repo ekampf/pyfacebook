@@ -920,6 +920,7 @@ class Facebook(object):
         self.secret_key = secret_key
         self.session_key = None
         self.session_key_expires = None
+        self.access_token = None # Support new OAuth access tokens
         self.auth_token = auth_token
         self.secret = None
         self.uid = None
@@ -1021,10 +1022,15 @@ class Facebook(object):
                 args[arg[0]] = str(arg[1]).lower()
 
         args['method'] = method
-        args['api_key'] = self.api_key
-        args['v'] = '1.0'
         args['format'] = RESPONSE_FORMAT
-        args['sig'] = self._hash_args(args)
+        if self.access_token:
+            # we're using new OAuth token to call old REST APIs
+            args['access_token'] = self.access_token
+        else:
+            # we're using old session keys to make the call
+            args['api_key'] = self.api_key
+            args['v'] = '1.0'
+            args['sig'] = self._hash_args(args)
 
         return args
 
